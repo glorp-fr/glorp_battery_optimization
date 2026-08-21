@@ -66,3 +66,12 @@ function with no Home Assistant dependency, tested with plain `pytest`:
 pip install pytest
 pytest tests/
 ```
+
+## Branding
+
+`icon.png` / `logo.png` at the repo root are the Glorp brand mark, reused from
+[osc-pra](https://osc-pra.osc-tests.fr) (another glorp-fr project). HACS reads these for
+its own store listing; they don't automatically appear on the Home Assistant
+Settings → Integrations page — that icon comes from the separate
+[home-assistant/brands](https://github.com/home-assistant/brands) repo, which only
+covers integrations submitted there.
