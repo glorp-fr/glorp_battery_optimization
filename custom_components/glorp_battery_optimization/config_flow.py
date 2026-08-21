@@ -24,7 +24,9 @@ from .const import (
     CONF_MAX_DISCHARGE_W,
     CONF_OUTPUT_LIMIT_ENTITY,
     CONF_SOC_ENTITY,
+    CONF_SUBSCRIPTION_KVA,
     DOMAIN,
+    SUBSCRIPTION_KVA_OPTIONS,
 )
 
 DATA_SCHEMA = vol.Schema(
@@ -43,6 +45,12 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_CAPACITY_KWH, default=3.84): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=200, step=0.1, unit_of_measurement="kWh")
         ),
+        vol.Required(CONF_SUBSCRIPTION_KVA, default=str(SUBSCRIPTION_KVA_OPTIONS[1])): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[str(kva) for kva in SUBSCRIPTION_KVA_OPTIONS],
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
     }
 )
 
@@ -54,5 +62,6 @@ class ZendureOptimizationConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
+            user_input[CONF_SUBSCRIPTION_KVA] = int(user_input[CONF_SUBSCRIPTION_KVA])
             return self.async_create_entry(title="Glorp's Battery Optimization", data=user_input)
         return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA)

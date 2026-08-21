@@ -11,6 +11,10 @@ CONF_GRID_POWER_ENTITY = "grid_power_entity"
 CONF_MAX_CHARGE_W = "max_charge_w"
 CONF_MAX_DISCHARGE_W = "max_discharge_w"
 CONF_CAPACITY_KWH = "capacity_kwh"
+CONF_SUBSCRIPTION_KVA = "subscription_kva"
+
+# French residential grid subscription tiers this integration supports.
+SUBSCRIPTION_KVA_OPTIONS = [3, 6, 9, 12]
 
 # AC mode option values written to the device's ac_mode select entity.
 AC_MODE_INPUT = "input"
@@ -24,6 +28,7 @@ SETTING_NIGHT_CHARGE_POWER = "night_charge_power"
 SETTING_OFF_PEAK_START = "off_peak_start"
 SETTING_OFF_PEAK_END = "off_peak_end"
 SETTING_DEADBAND_W = "deadband_w"
+SETTING_SUBSCRIPTION_MARGIN_W = "subscription_margin_w"
 
 SETTING_ENABLE_NIGHT_CHARGE = "enable_night_charge"
 SETTING_ENABLE_SOLAR_CHARGE = "enable_solar_charge"
@@ -37,11 +42,13 @@ DEFAULT_NIGHT_CHARGE_POWER = 500
 DEFAULT_OFF_PEAK_START = "22:30:00"
 DEFAULT_OFF_PEAK_END = "06:30:00"
 DEFAULT_DEADBAND_W = 20
+DEFAULT_SUBSCRIPTION_MARGIN_W = 500
 
 # Decision reasons exposed on sensor.<entry>_decision_reason.
 REASON_SOC_MIN_PROTECT = "soc_min_protect"
 REASON_SOC_MAX_PROTECT = "soc_max_protect"
 REASON_NIGHT_CHARGE = "night_charge"
+REASON_SUBSCRIPTION_LIMIT = "subscription_limit"
 REASON_SOLAR_SURPLUS = "solar_surplus"
 REASON_ZERO_EXPORT = "zero_export"
 REASON_IDLE = "idle"

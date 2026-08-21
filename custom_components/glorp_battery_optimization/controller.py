@@ -22,6 +22,7 @@ from .const import (
     CONF_MAX_DISCHARGE_W,
     CONF_OUTPUT_LIMIT_ENTITY,
     CONF_SOC_ENTITY,
+    CONF_SUBSCRIPTION_KVA,
     DEFAULT_DEADBAND_W,
     DEFAULT_NIGHT_CHARGE_POWER,
     DEFAULT_NIGHT_CHARGE_SOC_THRESHOLD,
@@ -29,6 +30,7 @@ from .const import (
     DEFAULT_OFF_PEAK_START,
     DEFAULT_SOC_MAX,
     DEFAULT_SOC_MIN,
+    DEFAULT_SUBSCRIPTION_MARGIN_W,
     SETTING_DEADBAND_W,
     SETTING_ENABLE_NIGHT_CHARGE,
     SETTING_ENABLE_SOLAR_CHARGE,
@@ -40,6 +42,7 @@ from .const import (
     SETTING_OFF_PEAK_START,
     SETTING_SOC_MAX,
     SETTING_SOC_MIN,
+    SETTING_SUBSCRIPTION_MARGIN_W,
 )
 from .decision import Decision, decide
 
@@ -64,6 +67,9 @@ class ZendureOptimizationController:
         # overlapping cycles interleave their service calls and the device
         # ends up with a mode from one decision and a limit from another.
         self._cycle_lock = asyncio.Lock()
+        # Fixed for the lifetime of the entry (grid subscription contracts
+        # don't change on their own); the margin below it is live-adjustable.
+        self._subscription_w = entry.data[CONF_SUBSCRIPTION_KVA] * 1000
         # Live-adjustable settings. Number/switch entities update these
         # directly (see number.py / switch.py) so a cycle always reads the
         # current value without going through hass.states for our own entities.
@@ -75,6 +81,7 @@ class ZendureOptimizationController:
             SETTING_OFF_PEAK_START: _parse_hhmmss(DEFAULT_OFF_PEAK_START),
             SETTING_OFF_PEAK_END: _parse_hhmmss(DEFAULT_OFF_PEAK_END),
             SETTING_DEADBAND_W: DEFAULT_DEADBAND_W,
+            SETTING_SUBSCRIPTION_MARGIN_W: DEFAULT_SUBSCRIPTION_MARGIN_W,
             SETTING_ENABLE_NIGHT_CHARGE: True,
             SETTING_ENABLE_SOLAR_CHARGE: True,
             SETTING_ENABLE_ZERO_EXPORT: True,
@@ -115,6 +122,7 @@ class ZendureOptimizationController:
             soc = self._read_float(self.entry.data[CONF_SOC_ENTITY])
             grid_power_w = self._read_float(self.entry.data[CONF_GRID_POWER_ENTITY])
             now_time = dt_util.now().time()
+            self.settings["max_grid_import_w"] = self._subscription_w - self.settings[SETTING_SUBSCRIPTION_MARGIN_W]
 
             result = decide(
                 {"soc": soc, "grid_power_w": grid_power_w, "now_time": now_time},

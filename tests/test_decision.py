@@ -14,6 +14,7 @@ from custom_components.glorp_battery_optimization.const import (
     REASON_SOC_MAX_PROTECT,
     REASON_SOC_MIN_PROTECT,
     REASON_SOLAR_SURPLUS,
+    REASON_SUBSCRIPTION_LIMIT,
     REASON_ZERO_EXPORT,
 )
 from custom_components.glorp_battery_optimization.decision import decide
@@ -27,6 +28,7 @@ BASE_SETTINGS = {
     "off_peak_end": time(6, 30),
     "max_charge_w": 1600,
     "max_discharge_w": 1600,
+    "max_grid_import_w": 5500,  # e.g. a 6 kVA subscription minus a 500 W margin
     "master_enable": True,
     "enable_night_charge": True,
     "enable_solar_charge": True,
@@ -108,3 +110,25 @@ def test_disabled_strategy_is_skipped():
     settings = {**BASE_SETTINGS, "enable_zero_export": False}
     result = decide(_inputs(50, 700, time(12, 0)), settings)
     assert result["reason"] == REASON_IDLE
+
+
+def test_night_charge_is_capped_by_subscription_headroom():
+    # House already drawing 5300 W; only 200 W of headroom left under the
+    # 5500 W limit, well below the configured 500 W night charge power.
+    settings = {**BASE_SETTINGS, "enable_zero_export": False}
+    result = decide(_inputs(30, 5300, time(23, 0)), settings)
+    assert result == {"active": True, "mode": AC_MODE_INPUT, "power_w": 200, "reason": REASON_NIGHT_CHARGE}
+
+
+def test_night_charge_blocked_when_subscription_already_exceeded():
+    settings = {**BASE_SETTINGS, "enable_zero_export": False}
+    result = decide(_inputs(30, 5500, time(23, 0)), settings)
+    assert result == {"active": True, "mode": None, "power_w": 0, "reason": REASON_SUBSCRIPTION_LIMIT}
+
+
+def test_night_charge_blocked_falls_through_to_zero_export():
+    # zero_export stays enabled here: if night charge can't fit, discharging
+    # to relieve the same overload is a sensible fallback, not a conflict.
+    result = decide(_inputs(30, 5500, time(23, 0)), BASE_SETTINGS)
+    assert result["reason"] == REASON_ZERO_EXPORT
+    assert result["mode"] == AC_MODE_OUTPUT

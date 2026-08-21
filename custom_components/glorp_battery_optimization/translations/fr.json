@@ -12,7 +12,8 @@
           "grid_power_entity": "Capteur de puissance réseau (positif = import, négatif = export)",
           "max_charge_w": "Puissance de charge maximale",
           "max_discharge_w": "Puissance de décharge maximale",
-          "capacity_kwh": "Capacité de la batterie"
+          "capacity_kwh": "Capacité de la batterie",
+          "subscription_kva": "Abonnement électrique (kVA)"
         }
       }
     }
@@ -37,7 +38,8 @@
           "zero_export": "Décharge zéro-injection",
           "idle": "Inactif",
           "master_disabled": "Interrupteur général désactivé",
-          "entity_unavailable": "Une entité d'entrée est indisponible"
+          "entity_unavailable": "Une entité d'entrée est indisponible",
+          "subscription_limit": "Limite d'abonnement atteinte"
         }
       }
     },
@@ -46,7 +48,8 @@
       "soc_max": { "name": "SOC maximum (plafond charge)" },
       "night_charge_soc_threshold": { "name": "Seuil SOC charge nocturne" },
       "night_charge_power": { "name": "Puissance charge nocturne" },
-      "deadband_w": { "name": "Zone morte anti-rebond" }
+      "deadband_w": { "name": "Zone morte anti-rebond" },
+      "subscription_margin_w": { "name": "Marge de sécurité abonnement" }
     },
     "switch": {
       "master_enable": { "name": "Activer l'optimisation" },

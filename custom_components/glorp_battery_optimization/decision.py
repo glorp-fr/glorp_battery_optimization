@@ -21,6 +21,7 @@ from .const import (
     REASON_SOC_MAX_PROTECT,
     REASON_SOC_MIN_PROTECT,
     REASON_SOLAR_SURPLUS,
+    REASON_SUBSCRIPTION_LIMIT,
     REASON_ZERO_EXPORT,
 )
 
@@ -48,7 +49,8 @@ def decide(inputs: dict[str, Any], settings: dict[str, Any]) -> Decision:
 
     `settings` carries the current configuration (see const.py for keys):
     soc_min/soc_max, night charge window/threshold/power, max charge/
-    discharge power, and the per-strategy enable switches.
+    discharge power, max_grid_import_w (the grid subscription limit minus
+    its safety margin, in watts), and the per-strategy enable switches.
     """
     if not settings["master_enable"]:
         return Decision(active=False, mode=None, power_w=0, reason=REASON_MASTER_DISABLED)
@@ -70,14 +72,23 @@ def decide(inputs: dict[str, Any], settings: dict[str, Any]) -> Decision:
     # never block discharging. Each strategy below is guarded only against
     # the direction it could hurt.
 
+    # Night charge is the only strategy that adds load regardless of what the
+    # house is already drawing, so it's the only one that can trip the grid
+    # subscription's breaker. Solar surplus and zero-export charging/discharge
+    # only ever move the grid reading toward zero, never past the current
+    # draw, so they need no such cap.
+    night_charge_blocked_by_subscription = False
     if (
         settings["enable_night_charge"]
         and _in_off_peak_window(now_time, settings["off_peak_start"], settings["off_peak_end"])
         and soc < settings["night_charge_soc_threshold"]
         and soc < soc_max
     ):
-        power = min(settings["night_charge_power"], max_charge_w)
-        return Decision(active=True, mode=AC_MODE_INPUT, power_w=int(power), reason=REASON_NIGHT_CHARGE)
+        headroom_w = max(0.0, settings["max_grid_import_w"] - grid_power_w)
+        power = min(settings["night_charge_power"], max_charge_w, headroom_w)
+        if power > 0:
+            return Decision(active=True, mode=AC_MODE_INPUT, power_w=int(power), reason=REASON_NIGHT_CHARGE)
+        night_charge_blocked_by_subscription = True
 
     if settings["enable_solar_charge"] and grid_power_w < 0 and soc < soc_max:
         power = min(-grid_power_w, max_charge_w)
@@ -91,7 +102,9 @@ def decide(inputs: dict[str, Any], settings: dict[str, Any]) -> Decision:
     # but the directional SOC guard blocked it. Command an explicit stop
     # either way, so the device never coasts on a stale setpoint.
     reason = REASON_IDLE
-    if soc >= soc_max and grid_power_w < 0:
+    if night_charge_blocked_by_subscription:
+        reason = REASON_SUBSCRIPTION_LIMIT
+    elif soc >= soc_max and grid_power_w < 0:
         reason = REASON_SOC_MAX_PROTECT
     elif soc <= soc_min and grid_power_w > 0:
         reason = REASON_SOC_MIN_PROTECT

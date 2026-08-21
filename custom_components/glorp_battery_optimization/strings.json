@@ -12,7 +12,8 @@
           "grid_power_entity": "Grid power sensor (positive = import, negative = export)",
           "max_charge_w": "Maximum charge power",
           "max_discharge_w": "Maximum discharge power",
-          "capacity_kwh": "Battery capacity"
+          "capacity_kwh": "Battery capacity",
+          "subscription_kva": "Grid subscription (kVA)"
         }
       }
     }
@@ -37,7 +38,8 @@
           "zero_export": "Zero-export discharging",
           "idle": "Idle",
           "master_disabled": "Master switch disabled",
-          "entity_unavailable": "An input entity is unavailable"
+          "entity_unavailable": "An input entity is unavailable",
+          "subscription_limit": "Grid subscription limit reached"
         }
       }
     },
@@ -46,7 +48,8 @@
       "soc_max": { "name": "Maximum SOC (charge ceiling)" },
       "night_charge_soc_threshold": { "name": "Night charge SOC threshold" },
       "night_charge_power": { "name": "Night charge power" },
-      "deadband_w": { "name": "Command deadband" }
+      "deadband_w": { "name": "Command deadband" },
+      "subscription_margin_w": { "name": "Grid subscription safety margin" }
     },
     "switch": {
       "master_enable": { "name": "Enable optimization" },

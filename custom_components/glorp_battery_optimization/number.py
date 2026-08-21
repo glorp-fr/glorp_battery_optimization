@@ -16,12 +16,14 @@ from .const import (
     DEFAULT_NIGHT_CHARGE_SOC_THRESHOLD,
     DEFAULT_SOC_MAX,
     DEFAULT_SOC_MIN,
+    DEFAULT_SUBSCRIPTION_MARGIN_W,
     DOMAIN,
     SETTING_DEADBAND_W,
     SETTING_NIGHT_CHARGE_POWER,
     SETTING_NIGHT_CHARGE_SOC_THRESHOLD,
     SETTING_SOC_MAX,
     SETTING_SOC_MIN,
+    SETTING_SUBSCRIPTION_MARGIN_W,
 )
 
 
@@ -44,6 +46,9 @@ NUMBERS = [
     ),
     SettingNumberDescription(SETTING_NIGHT_CHARGE_POWER, "night_charge_power", DEFAULT_NIGHT_CHARGE_POWER, 0, 12000, 50, "W"),
     SettingNumberDescription(SETTING_DEADBAND_W, "deadband_w", DEFAULT_DEADBAND_W, 0, 500, 5, "W"),
+    SettingNumberDescription(
+        SETTING_SUBSCRIPTION_MARGIN_W, "subscription_margin_w", DEFAULT_SUBSCRIPTION_MARGIN_W, 0, 5000, 50, "W"
+    ),
 ]
 
 
