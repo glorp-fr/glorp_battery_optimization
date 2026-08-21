@@ -1,0 +1,62 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Glorp's Battery Optimization",
+        "description": "Sélectionne les entités device de zendure_ha à lire et piloter, ainsi que les limites propres à l'appareil.",
+        "data": {
+          "ac_mode_entity": "Sélecteur de mode AC (input/output)",
+          "input_limit_entity": "Nombre limite de charge (input)",
+          "output_limit_entity": "Nombre limite de décharge (output)",
+          "soc_entity": "Capteur de niveau de charge (SOC)",
+          "grid_power_entity": "Capteur de puissance réseau (positif = import, négatif = export)",
+          "max_charge_w": "Puissance de charge maximale",
+          "max_discharge_w": "Puissance de décharge maximale",
+          "capacity_kwh": "Capacité de la batterie"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "active_mode": {
+        "name": "Mode actif",
+        "state": {
+          "idle": "Inactif",
+          "charging": "En charge",
+          "discharging": "En décharge"
+        }
+      },
+      "decision_reason": {
+        "name": "Raison de la décision",
+        "state": {
+          "soc_min_protect": "Protection SOC minimum",
+          "soc_max_protect": "Protection SOC maximum",
+          "night_charge": "Charge nocturne (heures creuses)",
+          "solar_surplus": "Charge sur excédent solaire",
+          "zero_export": "Décharge zéro-injection",
+          "idle": "Inactif",
+          "master_disabled": "Interrupteur général désactivé",
+          "entity_unavailable": "Une entité d'entrée est indisponible"
+        }
+      }
+    },
+    "number": {
+      "soc_min": { "name": "SOC minimum (plancher décharge)" },
+      "soc_max": { "name": "SOC maximum (plafond charge)" },
+      "night_charge_soc_threshold": { "name": "Seuil SOC charge nocturne" },
+      "night_charge_power": { "name": "Puissance charge nocturne" },
+      "deadband_w": { "name": "Zone morte anti-rebond" }
+    },
+    "switch": {
+      "master_enable": { "name": "Activer l'optimisation" },
+      "enable_night_charge": { "name": "Activer la charge nocturne" },
+      "enable_solar_charge": { "name": "Activer la charge sur excédent solaire" },
+      "enable_zero_export": { "name": "Activer la décharge zéro-injection" }
+    },
+    "time": {
+      "off_peak_start": { "name": "Début heures creuses" },
+      "off_peak_end": { "name": "Fin heures creuses" }
+    }
+  }
+}

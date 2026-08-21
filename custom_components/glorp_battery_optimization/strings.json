@@ -1,0 +1,62 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Glorp's Battery Optimization",
+        "description": "Select the zendure_ha device entities to read and drive, and the device's own power/capacity limits.",
+        "data": {
+          "ac_mode_entity": "AC mode select (input/output)",
+          "input_limit_entity": "Input (charge) power limit number",
+          "output_limit_entity": "Output (discharge) power limit number",
+          "soc_entity": "Battery state of charge sensor",
+          "grid_power_entity": "Grid power sensor (positive = import, negative = export)",
+          "max_charge_w": "Maximum charge power",
+          "max_discharge_w": "Maximum discharge power",
+          "capacity_kwh": "Battery capacity"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "active_mode": {
+        "name": "Active mode",
+        "state": {
+          "idle": "Idle",
+          "charging": "Charging",
+          "discharging": "Discharging"
+        }
+      },
+      "decision_reason": {
+        "name": "Decision reason",
+        "state": {
+          "soc_min_protect": "SOC minimum protection",
+          "soc_max_protect": "SOC maximum protection",
+          "night_charge": "Night charge (off-peak)",
+          "solar_surplus": "Solar surplus charging",
+          "zero_export": "Zero-export discharging",
+          "idle": "Idle",
+          "master_disabled": "Master switch disabled",
+          "entity_unavailable": "An input entity is unavailable"
+        }
+      }
+    },
+    "number": {
+      "soc_min": { "name": "Minimum SOC (discharge floor)" },
+      "soc_max": { "name": "Maximum SOC (charge ceiling)" },
+      "night_charge_soc_threshold": { "name": "Night charge SOC threshold" },
+      "night_charge_power": { "name": "Night charge power" },
+      "deadband_w": { "name": "Command deadband" }
+    },
+    "switch": {
+      "master_enable": { "name": "Enable optimization" },
+      "enable_night_charge": { "name": "Enable night charge" },
+      "enable_solar_charge": { "name": "Enable solar surplus charging" },
+      "enable_zero_export": { "name": "Enable zero-export discharge" }
+    },
+    "time": {
+      "off_peak_start": { "name": "Off-peak start" },
+      "off_peak_end": { "name": "Off-peak end" }
+    }
+  }
+}
