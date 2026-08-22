@@ -13,16 +13,15 @@ from homeassistant.core import Event, EventStateChangedData, HomeAssistant, call
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.util import dt as dt_util
 
+from .commands import build_commands
 from .const import (
-    AC_MODE_INPUT,
-    CONF_AC_MODE_ENTITY,
+    CONF_CONTROL_MODE,
     CONF_GRID_POWER_ENTITY,
-    CONF_INPUT_LIMIT_ENTITY,
     CONF_MAX_CHARGE_W,
     CONF_MAX_DISCHARGE_W,
-    CONF_OUTPUT_LIMIT_ENTITY,
     CONF_SOC_ENTITY,
     CONF_SUBSCRIPTION_KVA,
+    CONTROL_MODE_TWO_COMMANDS,
     DEFAULT_DEADBAND_W,
     DEFAULT_NIGHT_CHARGE_POWER,
     DEFAULT_NIGHT_CHARGE_SOC_THRESHOLD,
@@ -146,36 +145,8 @@ class ZendureOptimizationController:
             if same_mode and within_deadband:
                 return
 
-        ac_mode_entity = self.entry.data[CONF_AC_MODE_ENTITY]
-        input_limit_entity = self.entry.data[CONF_INPUT_LIMIT_ENTITY]
-        output_limit_entity = self.entry.data[CONF_OUTPUT_LIMIT_ENTITY]
-
-        if result["mode"] == AC_MODE_INPUT:
-            await self.hass.services.async_call(
-                "select", "select_option", {"entity_id": ac_mode_entity, "option": AC_MODE_INPUT}, blocking=True
-            )
-            await self.hass.services.async_call(
-                "number", "set_value", {"entity_id": output_limit_entity, "value": 0}, blocking=True
-            )
-            await self.hass.services.async_call(
-                "number", "set_value", {"entity_id": input_limit_entity, "value": result["power_w"]}, blocking=True
-            )
-        elif result["mode"] is not None:  # output / discharge
-            await self.hass.services.async_call(
-                "select", "select_option", {"entity_id": ac_mode_entity, "option": result["mode"]}, blocking=True
-            )
-            await self.hass.services.async_call(
-                "number", "set_value", {"entity_id": input_limit_entity, "value": 0}, blocking=True
-            )
-            await self.hass.services.async_call(
-                "number", "set_value", {"entity_id": output_limit_entity, "value": result["power_w"]}, blocking=True
-            )
-        else:  # stop
-            await self.hass.services.async_call(
-                "number", "set_value", {"entity_id": input_limit_entity, "value": 0}, blocking=True
-            )
-            await self.hass.services.async_call(
-                "number", "set_value", {"entity_id": output_limit_entity, "value": 0}, blocking=True
-            )
+        control_mode = self.entry.data.get(CONF_CONTROL_MODE, CONTROL_MODE_TWO_COMMANDS)
+        for domain, service, service_data in build_commands(control_mode, result, self.entry.data):
+            await self.hass.services.async_call(domain, service, service_data, blocking=True)
 
         self._last_written = {"mode": result["mode"], "power_w": result["power_w"]}

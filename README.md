@@ -2,30 +2,40 @@
 
 Home Assistant custom integration that adds battery charge/discharge optimization
 (zero-export matching, solar surplus charging, off-peak night charging, SOC safety
-limits) on top of the [zendure_ha](https://github.com/Zendure/Zendure-HA) integration.
+limits) on top of whatever integration already talks to your battery.
 
 ## Why this exists
 
+It started as a layer over [zendure_ha](https://github.com/Zendure/Zendure-HA):
 `zendure_ha`'s own "manager" abstraction (the aggregated `manual` mode driven by a
 signed `manual_power` number) does not reliably translate its internal charge/discharge
 decisions into commands the device actually executes, at least on a SolarFlow 1600 AC+.
 The device's own per-device entities (`select.<device>_ac_mode`, `number.<device>_input_limit`,
-`number.<device>_output_limit`) do work reliably. This integration drives those entities
+`number.<device>_output_limit`) do work reliably, so this integration drives those
 directly and never touches the manager entities.
+
+Since then it's grown a second, generic **control mode** so it can drive other brands
+too: any battery integration that exposes a single signed power number (positive/negative
+= charge/discharge, either convention) instead of a mode select plus two separate limits.
+See [Requirements](#requirements) below for the two shapes.
 
 See [`docs/superpowers/specs/2026-08-21-zendure-optimization-design.md`](docs/superpowers/specs/2026-08-21-zendure-optimization-design.md)
 for the full design rationale.
 
 ## Requirements
 
-- A working [`zendure_ha`](https://github.com/Zendure/Zendure-HA) installation, with
-  the device's `select.<device>_ac_mode`, `number.<device>_input_limit` and
-  `number.<device>_output_limit` entities confirmed to actually respond (test with a
-  manual `select.select_option` / `number.set_value` call before relying on this
-  integration).
-- A sensor reporting the battery's state of charge (0-100).
-- A sensor reporting grid power (positive = importing from the grid, negative =
-  exporting).
+A sensor reporting the battery's state of charge (0-100), and a sensor reporting grid
+power (positive = importing from the grid, negative = exporting) are needed either way.
+Beyond that, pick the control mode that matches how your battery integration exposes
+charge/discharge control:
+
+- **Two commands** (the `zendure_ha` case above) — a mode select entity with two option
+  values plus two separate, unsigned power-limit number entities. On `zendure_ha`,
+  confirm `select.<device>_ac_mode`, `number.<device>_input_limit` and
+  `number.<device>_output_limit` actually respond (test with a manual
+  `select.select_option` / `number.set_value` call) before relying on this integration.
+- **Single command** — one signed power number entity, with either sign convention
+  (positive = charge or positive = discharge — you pick which in the config flow).
 
 ## Installation
 
@@ -59,8 +69,9 @@ reconfiguration needed.
 
 ## Development
 
-The decision logic (`custom_components/glorp_battery_optimization/decision.py`) is a pure
-function with no Home Assistant dependency, tested with plain `pytest`:
+The decision logic (`decision.py`, deciding *what* to do) and the command builder
+(`commands.py`, translating that into service calls for the configured control mode) are
+both pure functions with no Home Assistant dependency, tested with plain `pytest`:
 
 ```
 pip install pytest

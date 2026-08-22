@@ -3,9 +3,12 @@
 DOMAIN = "glorp_battery_optimization"
 
 # --- Config entry data (set at setup, changed via reconfigure) ---
+CONF_CONTROL_MODE = "control_mode"
 CONF_AC_MODE_ENTITY = "ac_mode_entity"
 CONF_INPUT_LIMIT_ENTITY = "input_limit_entity"
 CONF_OUTPUT_LIMIT_ENTITY = "output_limit_entity"
+CONF_POWER_ENTITY = "power_entity"
+CONF_POWER_SIGN = "power_sign"
 CONF_SOC_ENTITY = "soc_entity"
 CONF_GRID_POWER_ENTITY = "grid_power_entity"
 CONF_MAX_CHARGE_W = "max_charge_w"
@@ -16,9 +19,20 @@ CONF_SUBSCRIPTION_KVA = "subscription_kva"
 # French residential grid subscription tiers this integration supports.
 SUBSCRIPTION_KVA_OPTIONS = [3, 6, 9, 12]
 
+# How the battery is driven. Two separate limit numbers plus a mode select
+# (the only shape zendure_ha's device entities support) or a single signed
+# power number (common on other brands/integrations).
+CONTROL_MODE_TWO_COMMANDS = "two_commands"
+CONTROL_MODE_SINGLE_COMMAND = "single_command"
+
 # AC mode option values written to the device's ac_mode select entity.
 AC_MODE_INPUT = "input"
 AC_MODE_OUTPUT = "output"
+
+# Sign convention for the single-command power entity: which direction reads
+# positive. The other direction is then written as a negative value.
+POWER_SIGN_POSITIVE_DISCHARGE = "positive_discharge"
+POWER_SIGN_POSITIVE_CHARGE = "positive_charge"
 
 # --- Live-adjustable settings (owned by our number/switch entities) ---
 SETTING_SOC_MIN = "soc_min"

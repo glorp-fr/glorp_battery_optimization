@@ -3,7 +3,14 @@
     "step": {
       "user": {
         "title": "Glorp's Battery Optimization",
-        "description": "Sélectionne les entités device de zendure_ha à lire et piloter, ainsi que les limites propres à l'appareil.",
+        "description": "Comment ta batterie expose-t-elle le pilotage charge/décharge ?",
+        "data": {
+          "control_mode": "Mode de pilotage"
+        }
+      },
+      "two_commands": {
+        "title": "Entités de la batterie",
+        "description": "Sélectionne les entités device à lire et piloter, ainsi que les limites propres à l'appareil.",
         "data": {
           "ac_mode_entity": "Sélecteur de mode AC (input/output)",
           "input_limit_entity": "Nombre limite de charge (input)",
@@ -15,6 +22,34 @@
           "capacity_kwh": "Capacité de la batterie",
           "subscription_kva": "Abonnement électrique (kVA)"
         }
+      },
+      "single_command": {
+        "title": "Entités de la batterie",
+        "description": "Sélectionne les entités device à lire et piloter, ainsi que les limites propres à l'appareil.",
+        "data": {
+          "power_entity": "Nombre de puissance charge/décharge (valeur signée unique)",
+          "power_sign": "Convention de signe",
+          "soc_entity": "Capteur de niveau de charge (SOC)",
+          "grid_power_entity": "Capteur de puissance réseau (positif = import, négatif = export)",
+          "max_charge_w": "Puissance de charge maximale",
+          "max_discharge_w": "Puissance de décharge maximale",
+          "capacity_kwh": "Capacité de la batterie",
+          "subscription_kva": "Abonnement électrique (kVA)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "control_mode": {
+      "options": {
+        "two_commands": "Deux commandes (sélecteur de mode + limites séparées charge/décharge)",
+        "single_command": "Une seule commande (un nombre de puissance signé)"
+      }
+    },
+    "power_sign": {
+      "options": {
+        "positive_discharge": "Positif = décharge, négatif = charge",
+        "positive_charge": "Positif = charge, négatif = décharge"
       }
     }
   },

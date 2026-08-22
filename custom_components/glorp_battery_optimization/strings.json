@@ -3,7 +3,14 @@
     "step": {
       "user": {
         "title": "Glorp's Battery Optimization",
-        "description": "Select the zendure_ha device entities to read and drive, and the device's own power/capacity limits.",
+        "description": "How does your battery expose charge/discharge control?",
+        "data": {
+          "control_mode": "Control mode"
+        }
+      },
+      "two_commands": {
+        "title": "Battery entities",
+        "description": "Select the device entities to read and drive, and the device's own power/capacity limits.",
         "data": {
           "ac_mode_entity": "AC mode select (input/output)",
           "input_limit_entity": "Input (charge) power limit number",
@@ -15,6 +22,34 @@
           "capacity_kwh": "Battery capacity",
           "subscription_kva": "Grid subscription (kVA)"
         }
+      },
+      "single_command": {
+        "title": "Battery entities",
+        "description": "Select the device entities to read and drive, and the device's own power/capacity limits.",
+        "data": {
+          "power_entity": "Charge/discharge power number (single signed value)",
+          "power_sign": "Sign convention",
+          "soc_entity": "Battery state of charge sensor",
+          "grid_power_entity": "Grid power sensor (positive = import, negative = export)",
+          "max_charge_w": "Maximum charge power",
+          "max_discharge_w": "Maximum discharge power",
+          "capacity_kwh": "Battery capacity",
+          "subscription_kva": "Grid subscription (kVA)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "control_mode": {
+      "options": {
+        "two_commands": "Two commands (mode select + separate charge/discharge limits)",
+        "single_command": "Single command (one signed power number)"
+      }
+    },
+    "power_sign": {
+      "options": {
+        "positive_discharge": "Positive = discharge, negative = charge",
+        "positive_charge": "Positive = charge, negative = discharge"
       }
     }
   },
