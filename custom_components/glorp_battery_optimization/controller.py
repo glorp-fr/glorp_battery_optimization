@@ -15,6 +15,8 @@ from homeassistant.util import dt as dt_util
 
 from .commands import build_commands
 from .const import (
+    AC_MODE_INPUT,
+    AC_MODE_OUTPUT,
     CONF_CONTROL_MODE,
     CONF_GRID_POWER_ENTITY,
     CONF_MAX_CHARGE_W,
@@ -23,6 +25,7 @@ from .const import (
     CONF_SUBSCRIPTION_KVA,
     CONTROL_MODE_TWO_COMMANDS,
     DEFAULT_DEADBAND_W,
+    DEFAULT_MODE_SWITCH_HYSTERESIS_W,
     DEFAULT_NIGHT_CHARGE_POWER,
     DEFAULT_NIGHT_CHARGE_SOC_THRESHOLD,
     DEFAULT_OFF_PEAK_END,
@@ -35,6 +38,7 @@ from .const import (
     SETTING_ENABLE_SOLAR_CHARGE,
     SETTING_ENABLE_ZERO_EXPORT,
     SETTING_MASTER_ENABLE,
+    SETTING_MODE_SWITCH_HYSTERESIS_W,
     SETTING_NIGHT_CHARGE_POWER,
     SETTING_NIGHT_CHARGE_SOC_THRESHOLD,
     SETTING_OFF_PEAK_END,
@@ -81,6 +85,7 @@ class ZendureOptimizationController:
             SETTING_OFF_PEAK_END: _parse_hhmmss(DEFAULT_OFF_PEAK_END),
             SETTING_DEADBAND_W: DEFAULT_DEADBAND_W,
             SETTING_SUBSCRIPTION_MARGIN_W: DEFAULT_SUBSCRIPTION_MARGIN_W,
+            SETTING_MODE_SWITCH_HYSTERESIS_W: DEFAULT_MODE_SWITCH_HYSTERESIS_W,
             SETTING_ENABLE_NIGHT_CHARGE: True,
             SETTING_ENABLE_SOLAR_CHARGE: True,
             SETTING_ENABLE_ZERO_EXPORT: True,
@@ -123,8 +128,22 @@ class ZendureOptimizationController:
             now_time = dt_util.now().time()
             self.settings["max_grid_import_w"] = self._subscription_w - self.settings[SETTING_SUBSCRIPTION_MARGIN_W]
 
+            # The grid sensor nets out our own last commanded power, so decide()
+            # needs it back (signed) to reconstruct the true uncovered load.
+            current_power_w = 0
+            if self._last_written is not None:
+                if self._last_written["mode"] == AC_MODE_OUTPUT:
+                    current_power_w = self._last_written["power_w"]
+                elif self._last_written["mode"] == AC_MODE_INPUT:
+                    current_power_w = -self._last_written["power_w"]
+
             result = decide(
-                {"soc": soc, "grid_power_w": grid_power_w, "now_time": now_time},
+                {
+                    "soc": soc,
+                    "grid_power_w": grid_power_w,
+                    "now_time": now_time,
+                    "current_power_w": current_power_w,
+                },
                 self.settings,
             )
             self.last_decision = result

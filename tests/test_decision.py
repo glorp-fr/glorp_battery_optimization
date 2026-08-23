@@ -8,6 +8,7 @@ from custom_components.glorp_battery_optimization.const import (
     AC_MODE_INPUT,
     AC_MODE_OUTPUT,
     REASON_ENTITY_UNAVAILABLE,
+    REASON_HYSTERESIS_HOLD,
     REASON_IDLE,
     REASON_MASTER_DISABLED,
     REASON_NIGHT_CHARGE,
@@ -29,6 +30,7 @@ BASE_SETTINGS = {
     "max_charge_w": 1600,
     "max_discharge_w": 1600,
     "max_grid_import_w": 5500,  # e.g. a 6 kVA subscription minus a 500 W margin
+    "mode_switch_hysteresis_w": 0,
     "master_enable": True,
     "enable_night_charge": True,
     "enable_solar_charge": True,
@@ -36,8 +38,13 @@ BASE_SETTINGS = {
 }
 
 
-def _inputs(soc, grid_power_w, now_time):
-    return {"soc": soc, "grid_power_w": grid_power_w, "now_time": now_time}
+def _inputs(soc, grid_power_w, now_time, current_power_w=0):
+    return {
+        "soc": soc,
+        "grid_power_w": grid_power_w,
+        "now_time": now_time,
+        "current_power_w": current_power_w,
+    }
 
 
 def test_master_disabled_is_hands_off():
@@ -132,3 +139,57 @@ def test_night_charge_blocked_falls_through_to_zero_export():
     result = decide(_inputs(30, 5500, time(23, 0)), BASE_SETTINGS)
     assert result["reason"] == REASON_ZERO_EXPORT
     assert result["mode"] == AC_MODE_OUTPUT
+
+
+def test_zero_export_targets_total_load_not_just_residual():
+    # The grid sensor already nets out whatever the battery is currently
+    # discharging (584 W), so the true uncovered load is 596 + 584 = 1180 W,
+    # not 596 W. Re-targeting just the residual would make the battery only
+    # ever chase half the load (this was the bug: grid == battery output at
+    # a stable ~half-of-load equilibrium instead of converging on 0 import).
+    result = decide(_inputs(50, 596, time(12, 0), current_power_w=584), BASE_SETTINGS)
+    assert result == {"active": True, "mode": AC_MODE_OUTPUT, "power_w": 1180, "reason": REASON_ZERO_EXPORT}
+
+
+def test_zero_export_total_load_is_still_capped_at_max_discharge():
+    result = decide(_inputs(50, 1200, time(12, 0), current_power_w=1000), BASE_SETTINGS)
+    assert result["power_w"] == BASE_SETTINGS["max_discharge_w"]
+
+
+def test_solar_charge_targets_total_surplus_not_just_residual():
+    # Symmetric case: already charging at 300 W, grid still shows 100 W of
+    # export, so the real surplus is 400 W, not 100 W.
+    result = decide(_inputs(50, -100, time(12, 0), current_power_w=-300), BASE_SETTINGS)
+    assert result == {"active": True, "mode": AC_MODE_INPUT, "power_w": 400, "reason": REASON_SOLAR_SURPLUS}
+
+
+def test_hysteresis_holds_discharge_direction_within_band():
+    # Currently discharging 200 W; the residual dips slightly negative (60 W
+    # of surplus) but stays inside the 100 W hysteresis band, so the battery
+    # should hold its discharge direction (at 0 W) instead of flipping to
+    # charge, to avoid flapping the AC mode relay back and forth.
+    settings = {**BASE_SETTINGS, "mode_switch_hysteresis_w": 100}
+    result = decide(_inputs(50, -260, time(12, 0), current_power_w=200), settings)
+    assert result == {"active": True, "mode": AC_MODE_OUTPUT, "power_w": 0, "reason": REASON_HYSTERESIS_HOLD}
+
+
+def test_hysteresis_allows_flip_once_band_is_exceeded():
+    # Same setup, but the surplus (150 W) now exceeds the 100 W band: the
+    # flip to charging must go through.
+    settings = {**BASE_SETTINGS, "mode_switch_hysteresis_w": 100}
+    result = decide(_inputs(50, -350, time(12, 0), current_power_w=200), settings)
+    assert result == {"active": True, "mode": AC_MODE_INPUT, "power_w": 150, "reason": REASON_SOLAR_SURPLUS}
+
+
+def test_hysteresis_holds_charge_direction_within_band():
+    settings = {**BASE_SETTINGS, "mode_switch_hysteresis_w": 100}
+    result = decide(_inputs(50, 260, time(12, 0), current_power_w=-200), settings)
+    assert result == {"active": True, "mode": AC_MODE_INPUT, "power_w": 0, "reason": REASON_HYSTERESIS_HOLD}
+
+
+def test_hysteresis_does_not_delay_establishing_initial_direction():
+    # No current direction (battery idle): hysteresis only guards against
+    # flipping an already-active direction, not the first activation.
+    settings = {**BASE_SETTINGS, "mode_switch_hysteresis_w": 100}
+    result = decide(_inputs(50, 60, time(12, 0), current_power_w=0), settings)
+    assert result == {"active": True, "mode": AC_MODE_OUTPUT, "power_w": 60, "reason": REASON_ZERO_EXPORT}

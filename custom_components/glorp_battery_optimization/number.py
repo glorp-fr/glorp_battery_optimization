@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     DEFAULT_DEADBAND_W,
+    DEFAULT_MODE_SWITCH_HYSTERESIS_W,
     DEFAULT_NIGHT_CHARGE_POWER,
     DEFAULT_NIGHT_CHARGE_SOC_THRESHOLD,
     DEFAULT_SOC_MAX,
@@ -19,6 +20,7 @@ from .const import (
     DEFAULT_SUBSCRIPTION_MARGIN_W,
     DOMAIN,
     SETTING_DEADBAND_W,
+    SETTING_MODE_SWITCH_HYSTERESIS_W,
     SETTING_NIGHT_CHARGE_POWER,
     SETTING_NIGHT_CHARGE_SOC_THRESHOLD,
     SETTING_SOC_MAX,
@@ -48,6 +50,9 @@ NUMBERS = [
     SettingNumberDescription(SETTING_DEADBAND_W, "deadband_w", DEFAULT_DEADBAND_W, 0, 500, 5, "W"),
     SettingNumberDescription(
         SETTING_SUBSCRIPTION_MARGIN_W, "subscription_margin_w", DEFAULT_SUBSCRIPTION_MARGIN_W, 0, 5000, 50, "W"
+    ),
+    SettingNumberDescription(
+        SETTING_MODE_SWITCH_HYSTERESIS_W, "mode_switch_hysteresis_w", DEFAULT_MODE_SWITCH_HYSTERESIS_W, 0, 1000, 10, "W"
     ),
 ]
 

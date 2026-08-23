@@ -63,9 +63,13 @@ Every time the configured grid power sensor changes state, the integration re-ev
 Each of the last three is toggled by its own switch entity; SOC safety is always on. A
 master switch cuts all writes at once, handing control back to the Zendure app.
 
-All thresholds (SOC min/max, night charge window/threshold/power, command deadband) are
-exposed as regular `number`/`time` entities — adjustable from any dashboard, no YAML or
-reconfiguration needed.
+All thresholds (SOC min/max, night charge window/threshold/power, command deadband,
+charge/discharge switch hysteresis) are exposed as regular `number`/`time` entities —
+adjustable from any dashboard, no YAML or reconfiguration needed. The switch hysteresis
+sets a power band (in W) that grid import/export must clear before the battery flips
+direction, so it doesn't flap the AC mode relay when the grid reading oscillates around
+zero; it's separate from the deadband, which only smooths small changes in magnitude
+within the same direction.
 
 ## Development
 

@@ -37,6 +37,7 @@
           "solar_surplus": "Solar surplus charging",
           "zero_export": "Zero-export discharging",
           "idle": "Idle",
+          "hysteresis_hold": "Holding direction (hysteresis)",
           "master_disabled": "Master switch disabled",
           "entity_unavailable": "An input entity is unavailable",
           "subscription_limit": "Grid subscription limit reached"
@@ -49,7 +50,8 @@
       "night_charge_soc_threshold": { "name": "Night charge SOC threshold" },
       "night_charge_power": { "name": "Night charge power" },
       "deadband_w": { "name": "Command deadband" },
-      "subscription_margin_w": { "name": "Grid subscription safety margin" }
+      "subscription_margin_w": { "name": "Grid subscription safety margin" },
+      "mode_switch_hysteresis_w": { "name": "Charge/discharge switch hysteresis" }
     },
     "switch": {
       "master_enable": { "name": "Enable optimization" },

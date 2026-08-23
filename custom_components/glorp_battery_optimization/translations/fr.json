@@ -72,6 +72,7 @@
           "solar_surplus": "Charge sur excédent solaire",
           "zero_export": "Décharge zéro-injection",
           "idle": "Inactif",
+          "hysteresis_hold": "Maintien du sens (hystérésis)",
           "master_disabled": "Interrupteur général désactivé",
           "entity_unavailable": "Une entité d'entrée est indisponible",
           "subscription_limit": "Limite d'abonnement atteinte"
@@ -84,7 +85,8 @@
       "night_charge_soc_threshold": { "name": "Seuil SOC charge nocturne" },
       "night_charge_power": { "name": "Puissance charge nocturne" },
       "deadband_w": { "name": "Zone morte anti-rebond" },
-      "subscription_margin_w": { "name": "Marge de sécurité abonnement" }
+      "subscription_margin_w": { "name": "Marge de sécurité abonnement" },
+      "mode_switch_hysteresis_w": { "name": "Hystérésis de bascule charge/décharge" }
     },
     "switch": {
       "master_enable": { "name": "Activer l'optimisation" },

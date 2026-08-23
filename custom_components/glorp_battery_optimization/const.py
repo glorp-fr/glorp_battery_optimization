@@ -43,6 +43,7 @@ SETTING_OFF_PEAK_START = "off_peak_start"
 SETTING_OFF_PEAK_END = "off_peak_end"
 SETTING_DEADBAND_W = "deadband_w"
 SETTING_SUBSCRIPTION_MARGIN_W = "subscription_margin_w"
+SETTING_MODE_SWITCH_HYSTERESIS_W = "mode_switch_hysteresis_w"
 
 SETTING_ENABLE_NIGHT_CHARGE = "enable_night_charge"
 SETTING_ENABLE_SOLAR_CHARGE = "enable_solar_charge"
@@ -57,6 +58,7 @@ DEFAULT_OFF_PEAK_START = "22:30:00"
 DEFAULT_OFF_PEAK_END = "06:30:00"
 DEFAULT_DEADBAND_W = 20
 DEFAULT_SUBSCRIPTION_MARGIN_W = 500
+DEFAULT_MODE_SWITCH_HYSTERESIS_W = 0
 
 # Decision reasons exposed on sensor.<entry>_decision_reason.
 REASON_SOC_MIN_PROTECT = "soc_min_protect"
@@ -66,6 +68,7 @@ REASON_SUBSCRIPTION_LIMIT = "subscription_limit"
 REASON_SOLAR_SURPLUS = "solar_surplus"
 REASON_ZERO_EXPORT = "zero_export"
 REASON_IDLE = "idle"
+REASON_HYSTERESIS_HOLD = "hysteresis_hold"
 REASON_MASTER_DISABLED = "master_disabled"
 REASON_ENTITY_UNAVAILABLE = "entity_unavailable"
 
