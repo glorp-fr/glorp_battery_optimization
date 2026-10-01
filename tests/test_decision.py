@@ -12,6 +12,7 @@ from custom_components.glorp_battery_optimization.const import (
     REASON_IDLE,
     REASON_MASTER_DISABLED,
     REASON_NIGHT_CHARGE,
+    REASON_OFF_PEAK_HOLD,
     REASON_SOC_MAX_PROTECT,
     REASON_SOC_MIN_PROTECT,
     REASON_SOLAR_SURPLUS,
@@ -90,6 +91,47 @@ def test_night_charge_window_wraps_past_midnight():
 def test_night_charge_does_not_fire_above_its_own_threshold():
     result = decide(_inputs(80, 0, time(23, 0)), BASE_SETTINGS)
     assert result["reason"] == REASON_IDLE
+
+
+@pytest.mark.parametrize("now", [time(23, 0), time(2, 0), time(6, 29)])
+def test_off_peak_does_not_discharge_once_night_threshold_reached(now):
+    # Off-peak grid power is cheap: once night charge has reached its
+    # threshold, covering the house from the battery only burns energy that
+    # was just bought (or will be needed after off-peak ends). Hold instead.
+    result = decide(_inputs(80, 700, now), BASE_SETTINGS)
+    assert result == {"active": True, "mode": None, "power_w": 0, "reason": REASON_OFF_PEAK_HOLD}
+
+
+def test_off_peak_hold_keeps_charge_direction_after_night_charge():
+    # Right after night charge stopped at the threshold: hold at 0 W in the
+    # same direction instead of flipping the AC mode to discharge.
+    result = decide(_inputs(50, 700, time(23, 0), current_power_w=-500), BASE_SETTINGS)
+    assert result == {"active": True, "mode": AC_MODE_INPUT, "power_w": 0, "reason": REASON_OFF_PEAK_HOLD}
+
+
+def test_zero_export_resumes_when_off_peak_ends():
+    result = decide(_inputs(80, 700, time(6, 30)), BASE_SETTINGS)
+    assert result["reason"] == REASON_ZERO_EXPORT
+
+
+def test_off_peak_hold_only_applies_when_night_charge_enabled():
+    # Without night charge, the off-peak window means nothing to us.
+    settings = {**BASE_SETTINGS, "enable_night_charge": False}
+    result = decide(_inputs(80, 700, time(23, 0)), settings)
+    assert result["reason"] == REASON_ZERO_EXPORT
+
+
+def test_off_peak_still_discharges_to_protect_subscription():
+    # Above the night threshold, but the house alone is at the subscription
+    # limit: discharging is still the right call to avoid tripping the breaker.
+    result = decide(_inputs(80, 5600, time(23, 0)), BASE_SETTINGS)
+    assert result["reason"] == REASON_ZERO_EXPORT
+    assert result["mode"] == AC_MODE_OUTPUT
+
+
+def test_off_peak_still_charges_from_solar_surplus():
+    result = decide(_inputs(80, -400, time(6, 0)), BASE_SETTINGS)
+    assert result["reason"] == REASON_SOLAR_SURPLUS
 
 
 def test_soc_min_blocks_discharge_but_not_charging():

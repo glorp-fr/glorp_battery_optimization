@@ -19,6 +19,7 @@ from .const import (
     REASON_IDLE,
     REASON_MASTER_DISABLED,
     REASON_NIGHT_CHARGE,
+    REASON_OFF_PEAK_HOLD,
     REASON_SOC_MAX_PROTECT,
     REASON_SOC_MIN_PROTECT,
     REASON_SOLAR_SURPLUS,
@@ -97,10 +98,13 @@ def decide(inputs: dict[str, Any], settings: dict[str, Any]) -> Decision:
     # subscription's breaker. Solar surplus and zero-export charging/discharge
     # only ever move the grid reading toward zero, never past the current
     # draw, so they need no such cap.
+    in_off_peak = settings["enable_night_charge"] and _in_off_peak_window(
+        now_time, settings["off_peak_start"], settings["off_peak_end"]
+    )
+
     night_charge_blocked_by_subscription = False
     if (
-        settings["enable_night_charge"]
-        and _in_off_peak_window(now_time, settings["off_peak_start"], settings["off_peak_end"])
+        in_off_peak
         and soc < settings["night_charge_soc_threshold"]
         and soc < soc_max
     ):
@@ -121,6 +125,15 @@ def decide(inputs: dict[str, Any], settings: dict[str, Any]) -> Decision:
         else:
             power = min(-residual_w, max_charge_w)
             return Decision(active=True, mode=AC_MODE_INPUT, power_w=int(power), reason=REASON_SOLAR_SURPLUS)
+
+    # Off-peak grid power is the cheapest there is: discharging then only
+    # spends energy that was just bought at that rate (or that's needed once
+    # off-peak ends). The one exception is the subscription limit — relieving
+    # the breaker still beats tripping it.
+    held_by_off_peak = in_off_peak and residual_w < settings["max_grid_import_w"]
+
+    if settings["enable_zero_export"] and residual_w > 0 and soc > soc_min and held_by_off_peak:
+        return Decision(active=True, mode=current_direction, power_w=0, reason=REASON_OFF_PEAK_HOLD)
 
     if settings["enable_zero_export"] and residual_w > 0 and soc > soc_min:
         if current_direction == AC_MODE_INPUT and residual_w <= hysteresis_w:

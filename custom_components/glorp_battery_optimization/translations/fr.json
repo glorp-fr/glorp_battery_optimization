@@ -69,6 +69,7 @@
           "soc_min_protect": "Protection SOC minimum",
           "soc_max_protect": "Protection SOC maximum",
           "night_charge": "Charge nocturne (heures creuses)",
+          "off_peak_hold": "Maintien en heures creuses (pas de décharge)",
           "solar_surplus": "Charge sur excédent solaire",
           "zero_export": "Décharge zéro-injection",
           "idle": "Inactif",

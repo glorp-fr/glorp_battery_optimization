@@ -64,6 +64,7 @@ DEFAULT_MODE_SWITCH_HYSTERESIS_W = 0
 REASON_SOC_MIN_PROTECT = "soc_min_protect"
 REASON_SOC_MAX_PROTECT = "soc_max_protect"
 REASON_NIGHT_CHARGE = "night_charge"
+REASON_OFF_PEAK_HOLD = "off_peak_hold"
 REASON_SUBSCRIPTION_LIMIT = "subscription_limit"
 REASON_SOLAR_SURPLUS = "solar_surplus"
 REASON_ZERO_EXPORT = "zero_export"

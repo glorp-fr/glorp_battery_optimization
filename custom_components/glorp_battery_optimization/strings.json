@@ -69,6 +69,7 @@
           "soc_min_protect": "SOC minimum protection",
           "soc_max_protect": "SOC maximum protection",
           "night_charge": "Night charge (off-peak)",
+          "off_peak_hold": "Holding during off-peak (no discharge)",
           "solar_surplus": "Solar surplus charging",
           "zero_export": "Zero-export discharging",
           "idle": "Idle",

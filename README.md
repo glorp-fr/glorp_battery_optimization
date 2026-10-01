@@ -58,7 +58,9 @@ Every time the configured grid power sensor changes state, the integration re-ev
 2. **Night charge** — during a configurable off-peak time window, charges at a
    configurable soft power if the SOC is below a configurable threshold.
 3. **Solar surplus charging** — charges to match grid export.
-4. **Zero-export discharge** — discharges to match grid import.
+4. **Zero-export discharge** — discharges to match grid import. While night charge is
+   enabled, it never runs inside the off-peak window (grid power is cheapest then), except
+   to keep the grid import under the subscription limit.
 
 Each of the last three is toggled by its own switch entity; SOC safety is always on. A
 master switch cuts all writes at once, handing control back to the Zendure app.
